@@ -8,6 +8,7 @@ const todo = () => {
       : []
   );
 
+  const [alert, setAlert] = useState(null);
   const inputRef = useRef();
 
   useEffect(() => {
@@ -34,20 +35,25 @@ const todo = () => {
   //update task status
   const toggleTodo = (id) => {
     setTodoList((prev) => {
-      return prev.map((todo) => {
-        if (id === todo.id) {
-          return { ...todo, isComplete: !todo.isComplete };
-        }
-        return todo;
-      });
+      return prev.map((todo) =>
+        id === todo.id ? { ...todo, isComplete: !todo.isComplete } : todo
+      );
     });
   };
 
-  //delete todo task
+  // delete todo task
   const deleteTodo = (id) => {
-    setTodoList((prev) => {
-      return prev.filter((todo) => todo.id !== id);
-    });
+    const todo = todoList.find((todo) => todo.id === id);
+
+    if (!todo.isComplete) {
+      setAlert("Only completed tasks can be deleted!");
+      setTimeout(() => setAlert(null), 5000);
+      return;
+    }
+
+    setTodoList((prev) => prev.filter((todo) => todo.id !== id));
+    setAlert("Task deleted!");
+    setTimeout(() => setAlert(null), 5000);
   };
 
   return (
@@ -61,6 +67,12 @@ const todo = () => {
               type="text"
               className="py-3 px-4 w-full border focus:outline-none focus:border-amber-500"
               placeholder="Add task"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addTask();
+                }
+              }}
             />
           </div>
           <button
@@ -72,6 +84,14 @@ const todo = () => {
         </div>
         <p className="my-3 text-sm text-zinc-400 px-1">Fill task details</p>
       </div>
+
+      {/* Alert */}
+      {alert && (
+        <div className="bg-red-200 text-red-800 px-4 py-2 rounded-md my-3">
+          {alert}
+        </div>
+      )}
+
       <div className="w-[30-rem] bg-slate-100 shadow py-6 px-4">
         <fieldset className="space-y-2 ">
           <legend className="text-pink-600 font-medium">List of tasks</legend>
